@@ -24,10 +24,4 @@ public interface ChallengeService {
     void preRecommend() throws IOException;
 
     void depositRecommend(Challenge challenge) throws IOException;
-
-    List<ChallengeUserListResponseDto> selectChallengeUserList();
-
-    AccumulatedAmountResponseDto selectAccumulatedAmount(Profile profile);
-
-    List<ChallengeHistoryResponseDto> selectChallengeHistory(Profile profile, Date yearAndMonth);
 }

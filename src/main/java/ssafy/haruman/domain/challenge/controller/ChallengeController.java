@@ -11,6 +11,7 @@ import ssafy.haruman.domain.challenge.dto.request.ExpenseUpdateRequestDto;
 import ssafy.haruman.domain.challenge.dto.response.*;
 import ssafy.haruman.domain.challenge.service.ChallengeService;
 import ssafy.haruman.domain.challenge.service.ExpenseService;
+import ssafy.haruman.domain.challenge.service.StatsService;
 import ssafy.haruman.domain.member.entity.Member;
 import ssafy.haruman.global.response.JsonResponse;
 import ssafy.haruman.global.response.PageInfo;
@@ -27,6 +28,7 @@ public class ChallengeController {
 
     private final ChallengeService challengeService;
     private final ExpenseService expenseService;
+    private final StatsService statsService;
 
     @PostMapping
     public ResponseEntity<ResponseWrapper<DailyChallengeResponseDto>> startChallenge(
@@ -53,7 +55,7 @@ public class ChallengeController {
     @GetMapping("/people")
     public ResponseEntity<ResponseWrapper<List<ChallengeUserListResponseDto>>> selectChallengeUserList() {
 
-        List<ChallengeUserListResponseDto> userList = challengeService.selectChallengeUserList();
+        List<ChallengeUserListResponseDto> userList = statsService.selectChallengeUserList();
 
         int size = 0;
         for (ChallengeUserListResponseDto group : userList) {
@@ -69,7 +71,7 @@ public class ChallengeController {
     public ResponseEntity<ResponseWrapper<AccumulatedAmountResponseDto>> selectAccumulatedAmount(
             @AuthenticationPrincipal Member member) {
 
-        AccumulatedAmountResponseDto accumulatedAmount = challengeService.selectAccumulatedAmount(member.getProfile());
+        AccumulatedAmountResponseDto accumulatedAmount = statsService.selectAccumulatedAmount(member.getProfile());
 
         return JsonResponse.ok("챌린지 누적 잔액을 성공적으로 가져왔습니다.", accumulatedAmount);
     }
@@ -81,7 +83,7 @@ public class ChallengeController {
             @DateTimeFormat(pattern = "yyyy-MM") Date yearAndMonth) {
 
         List<ChallengeHistoryResponseDto> challengeHistory =
-                challengeService.selectChallengeHistory(member.getProfile(), yearAndMonth);
+                statsService.selectChallengeHistory(member.getProfile(), yearAndMonth);
 
         PageInfo listSize = PageInfo.builder().size(challengeHistory.size()).build();
 

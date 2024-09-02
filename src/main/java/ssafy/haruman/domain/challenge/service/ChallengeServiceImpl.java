@@ -42,7 +42,6 @@ public class ChallengeServiceImpl implements ChallengeService {
     private final ChallengeRepository challengeRepository;
     private final ExpenseRepository expenseRepository;
     private final RedisTemplate<String, Float> floatRedisTemplate;
-    private final S3FileService s3FileService;
     private final String FILE_NAME = "bank_products.json";
     private final GPTChatRestService gptChatRestService;
     private final DepositService depositService;
@@ -107,55 +106,6 @@ public class ChallengeServiceImpl implements ChallengeService {
         }
 
         throw ChallengeWrongDataException.EXCEPTION;
-    }
-
-    @Override
-    public List<ChallengeUserListResponseDto> selectChallengeUserList() {
-
-        List<ChallengeUserInfoMapping> challengeList = challengeRepository.findChallengeAndExpenseAndProfileByStatus();
-
-        return challengeList.stream()
-                .collect(Collectors.groupingBy(this::getGroupKey))
-                .entrySet().stream()
-                .map(entry -> ChallengeUserListResponseDto.from(entry.getKey(), convertToUserInfoDto(entry.getValue())))
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public AccumulatedAmountResponseDto selectAccumulatedAmount(Profile profile) {
-
-        Integer accumulatedAmount = challengeRepository.sumByProfileAndStatus(profile.getId());
-
-        return AccumulatedAmountResponseDto.builder().accumulatedAmount(accumulatedAmount).build();
-    }
-
-    @Override
-    public List<ChallengeHistoryResponseDto> selectChallengeHistory(Profile profile, Date yearAndMonth) {
-
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM");
-        String date = yearAndMonth == null ?
-                LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM")) : dateFormat.format(yearAndMonth);
-
-        List<Challenge> challengeList = challengeRepository.findAllByProfileAndDate(profile.getId(), date);
-
-        return challengeList.stream()
-                .map(ChallengeHistoryResponseDto::from)
-                .collect(Collectors.toList());
-    }
-
-    private String getGroupKey(ChallengeUserInfoMapping challenge) {
-        ChallengeGroup group = ChallengeGroup.getGroup(challenge.getUsedAmount());
-        return group.getGroupKey();
-    }
-
-    private List<ChallengeUserInfoDto> convertToUserInfoDto(List<ChallengeUserInfoMapping> list) {
-        return list.stream()
-                .map(item -> {
-
-                    String profileImageUrl = s3FileService.getS3Url(item.getProfileImagePath(), item.getProfileImageName());
-                    return ChallengeUserInfoDto.from(item, profileImageUrl);
-                })
-                .collect(Collectors.toList());
     }
 
     @Override
